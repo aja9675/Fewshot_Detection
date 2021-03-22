@@ -45,6 +45,8 @@ Conventional training of a deep CNN based object detector demands a large number
 ### Prepare dataset
 + Get The Pascal VOC Data
 ```
+mkdir PascalVOC
+export DATA_ROOT=$(realpath PascalVOC/)
 cd $DATA_ROOT
 wget https://pjreddie.com/media/files/VOCtrainval_11-May-2012.tar
 wget https://pjreddie.com/media/files/VOCtrainval_06-Nov-2007.tar
@@ -72,13 +74,13 @@ python voc_label_1c.py
 To use our few-shot datasets
 ```
 cd $PROJ_ROOT
-python scripts/convert_fewlist.py 
+python scripts/convert_fewlist.py --droot $DATA_ROOT
 ```
 
 You may want to generate new few-shot datasets
-Change the ''DROOT'' varibale in scripts/gen_fewlist.py to $DATA_ROOT
 ```
-python scripts/gen_fewlist.py # might be different with ours
+ # might be different with ours 
+python scripts/gen_fewlist.py  --droot $DATA_ROOT
 ```
 
 ### Base Training

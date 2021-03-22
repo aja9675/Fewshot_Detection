@@ -507,7 +507,7 @@ if __name__ == '__main__':
     cfg.num_gpus = 4
 
     metafiles = 'data/voc_metadict1_full.txt'
-    trainlist = '/scratch/bykang/datasets/voc_train.txt'
+    #trainlist = '/data/datasets/PascalVOC/voc_train.txt'
 
     metaset = MetaDataset(metafiles=metafiles, train=True)
     metaloader = torch.utils.data.DataLoader(

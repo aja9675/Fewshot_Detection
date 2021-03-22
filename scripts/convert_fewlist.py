@@ -5,7 +5,7 @@ import numpy as np
 from os import path
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--droot', type=str, default='/home/bykang/voc')
+parser.add_argument('--droot', type=str, default='/data/datasets/PascalVOC')
 args = parser.parse_args()
 
 args.droot = args.droot.rstrip('/')
@@ -20,8 +20,7 @@ for name_list in sorted(os.listdir(src_folder)):
         names = f.readlines()
     
     # Replace data root
-    names = [name.replace('/scratch/bykang/datasets', args.droot) 
-             for name in names]
+    names = [name.replace('/scratch/bykang/datasets', args.droot) for name in names]
     
     with open(path.join(args.droot, 'voclist', name_list), 'w') as f:
         f.writelines(names)
@@ -40,8 +39,7 @@ for fname in ['voc_traindict_full.txt',
         lines = f.readlines()
 
     # Replace data root
-    lines = [line.replace('/scratch/bykang/datasets', args.droot) 
-             for line in lines]
+    lines = [line.replace('/home/bykang/voc', args.droot) for line in lines]
 
     # Rewrite linea
     with open(full_name, 'w') as f:

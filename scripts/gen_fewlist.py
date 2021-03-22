@@ -12,9 +12,6 @@ classes = ["aeroplane", "bicycle", "bird", "boat", "bottle",
 # few_nums = [1, 10]
 few_nums = [1, 2, 3, 5, 10]
 # few_nums = [20]
-DROOT = '/home/bykang/voc'
-root =  DROOT + '/voclist/'
-rootfile =  DROOT + '/voc_train.txt'
 
 def is_valid(imgpath, cls_name):
     imgpath = imgpath.strip()
@@ -26,7 +23,7 @@ def is_valid(imgpath, cls_name):
     else:
         return False
 
-def gen_image_fewlist():
+def gen_image_fewlist(root, rootfile):
     print('-----------------------------------------------------------')
     print('----------- Generating fewlist  (images) ------------------')
     for i, clsname in enumerate(classes):
@@ -90,7 +87,7 @@ def get_bbox_fewlist(rootfile, shot):
     return cls_lists
 
 
-def gen_bbox_fewlist():
+def gen_bbox_fewlist(root, rootfile):
     print('-----------------------------------------------------------')
     print('----------- Generating fewlist  (bboxes) ------------------')
     for n in few_nums:
@@ -106,15 +103,19 @@ def gen_bbox_fewlist():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--type', type=str, default=None, choices=['box', 'img', 'both'])
+    parser.add_argument('--droot', type=str, default='/data/datasets/PascalVOC')
     args = parser.parse_args()
 
+    root =  args.droot  + '/voclist/'
+    rootfile =  args.droot  + '/voc_train.txt'
+
     if args.type is None or args.type == 'box':
-        gen_bbox_fewlist()
+        gen_bbox_fewlist(root, rootfile)
     elif args.type == 'img':
-        gen_image_fewlist()
+        gen_image_fewlist(root, rootfile)
     elif args.type == 'both':
-        gen_image_fewlist()
-        gen_bbox_fewlist()
+        gen_image_fewlist(root, rootfile)
+        gen_bbox_fewlist(root, rootfile)
 
 
 if __name__ == '__main__':
