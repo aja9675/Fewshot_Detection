@@ -24,6 +24,8 @@ from darknet_meta import Darknet
 from models.tiny_yolo import TinyYoloNet
 import pdb
 
+from icecream import ic
+
 # Training settings
 datacfg       = sys.argv[1]
 darknetcfg    = parse_cfg(sys.argv[2])
@@ -96,11 +98,11 @@ trainlist         = dataset.build_dataset(data_options)
 nsamples          = len(trainlist)
 init_width        = model.width
 init_height       = model.height
-init_epoch        = 0 if cfg.tuning else model.seen/nsamples
+init_epoch        = 0 if cfg.tuning else int(model.seen/nsamples)
 max_epochs        = max_batches*batch_size/nsamples+1
-max_epochs        = int(math.ceil(cfg.max_epoch*1./cfg.repeat)) if cfg.tuning else max_epochs 
-print(cfg.repeat, nsamples, max_batches, batch_size)
-print(num_workers)
+max_epochs        = int(math.ceil(cfg.max_epoch*1./cfg.repeat)) if cfg.tuning else int(math.ceil(max_epochs))
+ic(cfg.repeat, nsamples, max_batches, batch_size)
+ic(num_workers)
 
 kwargs = {'num_workers': num_workers, 'pin_memory': True} if use_cuda else {}
 test_loader = torch.utils.data.DataLoader(
@@ -135,9 +137,11 @@ print('factor:', factor)
 learning_rate /= factor
 
 if use_cuda:
+    ic("Using cuda")
     if ngpus > 1:
         model = torch.nn.DataParallel(model).cuda()
     else:
+        ic("Calling model.cuda()")
         model = model.cuda()
 
 optimizer = optim.SGD(model.parameters(),
@@ -145,7 +149,6 @@ optimizer = optim.SGD(model.parameters(),
                       momentum=momentum,
                       dampening=0,
                       weight_decay=decay*batch_size*factor)
-
 
 def adjust_learning_rate(optimizer, batch):
     """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
@@ -164,6 +167,8 @@ def adjust_learning_rate(optimizer, batch):
 
 def train(epoch):
     global processed_batches
+
+    ic("Training...")
     t0 = time.time()
     if ngpus > 1:
         cur_model = model.module
