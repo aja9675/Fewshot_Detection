@@ -248,7 +248,7 @@ def test(epoch):
     proposals   = 0.0
     correct     = 0.0
 
-    with torch.no_grad()
+    with torch.no_grad():
         for batch_idx, (data, target) in enumerate(test_loader):
             if use_cuda:
                 data = data.cuda()

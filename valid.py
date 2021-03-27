@@ -51,7 +51,7 @@ def valid(datacfg, cfgfile, weightfile, outfile):
    
     lineId = -1
     
-    with torch.no_grad()
+    with torch.no_grad():
         conf_thresh = 0.005
         nms_thresh = 0.45
         for batch_idx, (data, target) in enumerate(valid_loader):
