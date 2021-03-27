@@ -8,7 +8,7 @@ from cfg import cfg
 from cfg import parse_cfg
 import os
 import pdb
-
+from icecream import ic
 
 def valid(datacfg, darknetcfg, learnetcfg, weightfile, outfile, use_baserw=False):
     options = read_data_cfg(datacfg)
@@ -173,7 +173,7 @@ def valid(datacfg, darknetcfg, learnetcfg, weightfile, outfile, use_baserw=False
                     y2 = (box[1] + box[3]/2.0) * height
 
                     det_conf = box[4]
-                    for j in range((len(box)-5)/2):
+                    for j in range((len(box)-5)//2):
                         cls_conf = box[5+2*j]
                         cls_id = box[6+2*j]
                         prob =det_conf * cls_conf

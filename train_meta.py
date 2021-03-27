@@ -259,6 +259,10 @@ def train(epoch):
         cur_model.seen = (epoch + 1) * len(train_loader.dataset)
         cur_model.save_weights('%s/%06d.weights' % (backupdir, epoch+1))
 
+    if epoch == max_epochs-1:
+        print("Writing final model weights")
+        cur_model.save_weights('%s/model_final.weights' % backupdir)
+
 
 def test(epoch):
     def truths_length(truths):
@@ -278,7 +282,7 @@ def test(epoch):
     proposals   = 0.0
     correct     = 0.0
 
-    with torch.no_grad()
+    with torch.no_grad():
         _test_metaloader = iter(test_metaloader)
         for batch_idx, (data, target) in enumerate(test_loader):
             metax, mask = _test_metaloader.next()
