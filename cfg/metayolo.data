@@ -12,4 +12,4 @@ valid = /data/datasets/PascalVOC/2007_test.txt
 backup = backup/metayolo
 gpus=0
 tune=0
-num_workers=10
+num_workers=20
