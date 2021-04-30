@@ -198,7 +198,8 @@ def train(epoch):
     metaloader = iter(metaloader)
 
     lr = adjust_learning_rate(optimizer, processed_batches)
-    logging('epoch %d/%d, processed %d samples, lr %f' % (epoch, max_epochs, epoch * len(train_loader.dataset), lr))
+    logging('epoch %d/%d, processed %d samples, lr %.8f' % (epoch, max_epochs, epoch * len(train_loader.dataset), lr))
+    logging('processed_batches %d' % (processed_batches))
 
     model.train()
     t1 = time.time()
