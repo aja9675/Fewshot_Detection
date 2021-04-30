@@ -150,6 +150,7 @@ def __configure_net(netopt):
     __C.height = int(netopt['height'])
     __C.width = int(netopt['width'])
     __C.batch_size = int(netopt['batch'])
+    __C.actual_batch = int(netopt['actual_batch'])
 
 
 def __configure_meta(metaopt):

@@ -35,6 +35,7 @@ weightfile    = sys.argv[4]
 data_options  = read_data_cfg(datacfg)
 net_options   = darknetcfg[0]
 meta_options  = learnetcfg[0]
+ic(data_options)
 
 # Configure options
 cfg.config_data(data_options)
@@ -52,12 +53,15 @@ ngpus         = len(gpus.split(','))
 num_workers   = int(data_options['num_workers'])
 
 batch_size    = int(net_options['batch'])
+actual_bs     = int(net_options['actual_batch'])
 max_batches   = int(net_options['max_batches'])
 learning_rate = float(net_options['learning_rate'])
 momentum      = float(net_options['momentum'])
 decay         = float(net_options['decay'])
 steps         = [float(step) for step in net_options['steps'].split(',')]
 scales        = [float(scale) for scale in net_options['scales'].split(',')]
+ic(batch_size)
+ic(actual_bs)
 
 #Train parameters
 use_cuda      = True
@@ -114,6 +118,8 @@ test_loader = torch.utils.data.DataLoader(
     batch_size=batch_size, shuffle=False, **kwargs)
 
 test_metaset = dataset.MetaDataset(metafiles=metadict, train=True)
+ic(test_metaset.batch_size)
+
 test_metaloader = torch.utils.data.DataLoader(
     test_metaset,
     batch_size=test_metaset.batch_size,
@@ -183,9 +189,9 @@ def train(epoch):
                        ]), 
                        train=True, 
                        seen=cur_model.seen,
-                       batch_size=batch_size,
+                       batch_size=actual_bs,
                        num_workers=num_workers),
-        batch_size=batch_size, shuffle=False, **kwargs)
+        batch_size=actual_bs, shuffle=False, **kwargs)
 
     metaset = dataset.MetaDataset(metafiles=metadict, train=True)
     metaloader = torch.utils.data.DataLoader(
@@ -201,6 +207,17 @@ def train(epoch):
     logging('epoch %d/%d, processed %d samples, lr %.8f' % (epoch, max_epochs, epoch * len(train_loader.dataset), lr))
     logging('processed_batches %d' % (processed_batches))
 
+    # AA I can't fit batch size 64 on my GPU, so I'm using gradient accumulation
+    # to account for this
+    accumulate_gradients = actual_bs != batch_size
+    ic(accumulate_gradients)
+    # Check that our effective bs is evenly divisible by our actual
+    assert(batch_size % actual_bs == 0)
+    accumulate_step = batch_size / actual_bs
+    ic(accumulate_step)
+    # Note, using modulo below to keep things simple
+    # So we'll get a short batch for idx 0, but the rest will be what we want
+
     model.train()
     t1 = time.time()
     avg_time = torch.zeros(9)
@@ -208,7 +225,8 @@ def train(epoch):
         metax, mask = metaloader.next()
         t2 = time.time()
         adjust_learning_rate(optimizer, processed_batches)
-        processed_batches = processed_batches + 1
+        if batch_idx % accumulate_step == 0:
+            processed_batches = processed_batches + 1
 
         if use_cuda:
             data = data.cuda()
@@ -219,7 +237,8 @@ def train(epoch):
         data, target = Variable(data), Variable(target)
         metax, mask = Variable(metax), Variable(mask)
         t4 = time.time()
-        optimizer.zero_grad()
+        if batch_idx % accumulate_step == 0:
+            optimizer.zero_grad()
         t5 = time.time()
         output = model(data, metax, mask)
         t6 = time.time()
@@ -228,7 +247,8 @@ def train(epoch):
         t7 = time.time()
         loss.backward()
         t8 = time.time()
-        optimizer.step()
+        if batch_idx % accumulate_step == 0:
+            optimizer.step()
         t9 = time.time()
         if False and batch_idx > 1:
             avg_time[0] = avg_time[0] + (t2-t1)
