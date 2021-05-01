@@ -213,19 +213,19 @@ def train(epoch):
     ic(accumulate_gradients)
     # Check that our effective bs is evenly divisible by our actual
     assert(batch_size % actual_bs == 0)
-    accumulate_step = batch_size / actual_bs
+    accumulate_step = batch_size // actual_bs
     ic(accumulate_step)
-    # Note, using modulo below to keep things simple
-    # So we'll get a short batch for idx 0, but the rest will be what we want
 
     model.train()
     t1 = time.time()
     avg_time = torch.zeros(9)
+    optimizer.zero_grad()
     for batch_idx, (data, target) in enumerate(train_loader):
+        #ic("iter")
         metax, mask = metaloader.next()
         t2 = time.time()
         adjust_learning_rate(optimizer, processed_batches)
-        if batch_idx % accumulate_step == 0:
+        if (batch_idx+1) % accumulate_step == 0:
             processed_batches = processed_batches + 1
 
         if use_cuda:
@@ -237,8 +237,6 @@ def train(epoch):
         data, target = Variable(data), Variable(target)
         metax, mask = Variable(metax), Variable(mask)
         t4 = time.time()
-        if batch_idx % accumulate_step == 0:
-            optimizer.zero_grad()
         t5 = time.time()
         output = model(data, metax, mask)
         t6 = time.time()
@@ -247,8 +245,10 @@ def train(epoch):
         t7 = time.time()
         loss.backward()
         t8 = time.time()
-        if batch_idx % accumulate_step == 0:
+        if (batch_idx+1) % accumulate_step == 0:
+            #ic("step")
             optimizer.step()
+            optimizer.zero_grad()
         t9 = time.time()
         if False and batch_idx > 1:
             avg_time[0] = avg_time[0] + (t2-t1)
