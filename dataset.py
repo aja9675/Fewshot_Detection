@@ -449,7 +449,8 @@ class MetaDataset(Dataset):
         print('===> filtering...')
         _cnt = 0
         for clsid, metaind in inds:
-            print('|{}/{}'.format(_cnt, len(inds)))
+            if _cnt % 100 == 0:
+                print('|{}/{}'.format(_cnt, len(inds)))
             _cnt += 1
             img, mask = self.get_metain(clsid, metaind)
             if img is not None:

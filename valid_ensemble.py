@@ -90,7 +90,8 @@ def valid(datacfg, darknetcfg, learnetcfg, weightfile, outfile, use_baserw=False
         print('===> Generating dynamic weights...')
         kkk = 0
         for metax, mask, clsids in metaloader:
-            print('===> {}/{}'.format(kkk, len(metaset) // batch_size))
+            if kkk % 10 == 0:
+                print('===> {}/{}'.format(kkk, len(metaset) // batch_size))
             kkk += 1
             metax, mask = metax.cuda(), mask.cuda()
             metax, mask = Variable(metax), Variable(mask)
