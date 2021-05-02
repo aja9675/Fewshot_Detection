@@ -335,8 +335,13 @@ class RegionLossV2(nn.Module):
         cls        = cls[Variable(cls_mask.view(-1, 1).repeat(1,cs).cuda())].view(-1, cs)  
 
         tcls = Variable(tcls.view(-1)[cls_mask.view(-1)].long().cuda())
+
+        # nn.CrossEntropyLoss "combines LogSoftmax and NLLLoss in one single class"
+        # size_average=True will average losses per mini batch rather than add them
+        # NOTE: This breaks naive gradient accumulation, since the sum of averages != the true average
+        # Luckily, we're already setting this to false, so it's not an issue
+        # Tests with actual batch sizes of 16 and 32, accumulating to 64, do show equivalent results
         ClassificationLoss = nn.CrossEntropyLoss(size_average=False)
-       
         t3 = time.time()
 
         loss_x = self.coord_scale * nn.MSELoss(size_average=False)(x*coord_mask, tx*coord_mask)/2.0

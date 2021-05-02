@@ -188,6 +188,8 @@ def fill_truth_detection_meta(labpath, w, h, flip, dx, dy, sx, sy):
             if sum(ccs) >= 50:
                 break
 
+    # This reshape is what turns (15, 50, 5) into (15, 250) for voc dataset
+    # Shape is (n_classes, max_boxes, YOLOpred)
     label = np.reshape(label, (n_cls, -1))
     return label
 
