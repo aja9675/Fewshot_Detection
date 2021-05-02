@@ -40,6 +40,8 @@ for fname in ['voc_traindict_full.txt',
 
     # Replace data root
     lines = [line.replace('/home/bykang/voc', args.droot) for line in lines]
+    # AA for portability
+    lines = [line.replace('/data/datasets/PascalVOC', args.droot) for line in lines]
 
     # Rewrite linea
     with open(full_name, 'w') as f:
