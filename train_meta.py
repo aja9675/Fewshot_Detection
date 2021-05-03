@@ -129,6 +129,7 @@ test_metaloader = torch.utils.data.DataLoader(
 )
 
 # Adjust learning rate
+# Default neg_ratio is 1 for training, 0 for tuning
 factor = len(test_metaset.classes)
 if cfg.neg_ratio == 'full':
     factor = 15.
@@ -155,6 +156,11 @@ optimizer = optim.SGD(model.parameters(),
                       momentum=momentum,
                       dampening=0,
                       weight_decay=decay*batch_size*factor)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer,
+                                                mode='min', # Default: 'min'
+                                                factor=0.1, # Default: 0.1
+                                                patience=1, # Default: 10
+                                                verbose=True)
 
 def adjust_learning_rate(optimizer, batch):
     """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
@@ -216,6 +222,9 @@ def train(epoch):
     accumulate_step = batch_size // actual_bs
     ic(accumulate_step)
 
+    # B/c we're not validating, use loss as the LR scheduler trigger
+    losses = []
+
     model.train()
     t1 = time.time()
     avg_time = torch.zeros(9)
@@ -244,6 +253,7 @@ def train(epoch):
         loss = region_loss(output, target)
         t7 = time.time()
         loss.backward()
+        losses.append(loss.item())
         t8 = time.time()
         if (batch_idx+1) % accumulate_step == 0:
             #ic("step")
@@ -274,6 +284,10 @@ def train(epoch):
     print('')
     t1 = time.time()
     logging('training with %f samples/s' % (len(train_loader.dataset)/(t1-t0)))
+
+    avg_loss = np.mean(losses)
+    logging('Average epoch loss: %f' % avg_loss)
+    scheduler.step(avg_loss)
 
     if (epoch+1) % cfg.save_interval == 0:
         logging('save weights to %s/%06d.weights' % (backupdir, epoch+1))
