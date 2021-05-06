@@ -43,7 +43,7 @@ class FocalLoss(nn.Module):
 
     def forward(self, inputs, targets):
         N = inputs.size(0)
-        print(N)
+        #print(N)
         C = inputs.size(1)
         P = F.softmax(inputs)
 
